@@ -1,6 +1,4 @@
 import pandas as pd
-
-
 def production_kpis(df: pd.DataFrame) -> dict:
     """Retorna os principais indicadores do projeto."""
 

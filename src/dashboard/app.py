@@ -57,7 +57,10 @@ st.divider()
 
 df = load_clean_data()
 
-st.sidebar.title("Filtros")
+st.sidebar.markdown("## Filtros")
+st.sidebar.caption(
+    "Selecione os critérios para atualizar todo o dashboard."
+)
 
 estado = st.sidebar.selectbox(
     "Estado",
@@ -122,6 +125,45 @@ if poco != "Todos":
         df_filtrado["Poço"] == poco
     ]
 
+meses = sorted(df["Mês/Ano"].dropna().unique())
+
+meses_dict = {
+    mes.strftime("%b/%Y"): mes
+    for mes in meses
+}
+
+inicio_str = st.sidebar.selectbox(
+    "Mês inicial",
+    list(meses_dict.keys()),
+)
+
+fim_str = st.sidebar.selectbox(
+    "Mês final",
+    list(meses_dict.keys()),
+)
+
+inicio = meses_dict[inicio_str]
+fim = meses_dict[fim_str]
+
+if inicio > fim:
+    st.sidebar.error(
+        "O mês inicial não pode ser maior que o mês final."
+    )
+    st.stop()
+
+df_filtrado = df_filtrado[
+    (df_filtrado["Mês/Ano"] >= inicio)
+    & (df_filtrado["Mês/Ano"] <= fim)
+]
+
+if df_filtrado.empty:
+    st.warning(
+        "Nenhum registro encontrado para os filtros selecionados."
+    )
+    st.stop()
+
+st.sidebar.divider()
+
 kpis = production_kpis(df_filtrado)
 
 # ==========================
@@ -153,6 +195,14 @@ with col4:
         "Estados",
         format_integer(kpis["producing_states"]),
     )
+
+st.caption(
+    "Todos os indicadores são atualizados automaticamente conforme os filtros selecionados."
+)
+
+st.write(
+    f"**Registros analisados:** {len(df_filtrado):,}"
+)
 
 st.divider()
 
