@@ -1,10 +1,14 @@
 import streamlit as st
 
 @st.cache_data
-def load_clean_data():
+def get_data():
     df = load_data()
-    df = clean_data(df)
-    return df
+    return clean_data(df)
+
+
+@st.cache_data
+def get_kpis(df):
+    return production_kpis(df)
 
 from src.data.load import load_data
 from src.processing.clean import clean_data
@@ -47,6 +51,9 @@ st.set_page_config(
 
 st.title("🛢️ PetroForge")
 st.subheader("Dashboard da Produção Brasileira de Petróleo (ANP)")
+st.caption(
+    "Produção brasileira de petróleo e gás natural com dados públicos da ANP."
+)
 
 st.divider()
 
@@ -55,11 +62,11 @@ st.divider()
 # Carregamento dos dados
 # ==========================
 
-df = load_clean_data()
+df = get_data()
 
 st.sidebar.markdown("## Filtros")
 st.sidebar.caption(
-    "Selecione os critérios para atualizar todo o dashboard."
+    "Selecione os critérios para atualizar todo o dashboard. Todos os indicadores e gráficos são atualizados automaticamente."
 )
 
 estado = st.sidebar.selectbox(
@@ -164,13 +171,19 @@ if df_filtrado.empty:
 
 st.sidebar.divider()
 
-kpis = production_kpis(df_filtrado)
 
+kpis = get_kpis(df_filtrado)
+
+st.header("📊 Indicadores")
 # ==========================
 # KPIs
 # ==========================
 
-col1, col2, col3, col4 = st.columns(4)
+st.header("📈 Visualizações")
+
+with st.container():
+
+    col1, col2, col3, col4 = st.columns(4)
 
 with col1:
     st.metric(
@@ -227,14 +240,14 @@ treemap_df = oil_production_treemap(df_filtrado)
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("Produção Mensal")
+    st.subheader("📅 Produção Mensal")
     st.plotly_chart(
         plot_monthly_oil_production(monthly_df),
         use_container_width=True,
     )
 
 with col2:
-    st.subheader("Produção por Estado")
+    st.subheader("🗺️ Produção por Estado")
     st.plotly_chart(
         plot_oil_by_state(state_df),
         use_container_width=True,
@@ -243,14 +256,14 @@ with col2:
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("Produção por Bacia")
+    st.subheader("🌊 Produção por Bacia")
     st.plotly_chart(
         plot_oil_by_basin(basin_df),
         use_container_width=True,
     )
 
 with col2:
-    st.subheader("Top Campos")
+    st.subheader("🏆 Top Campos Produtores")
     st.plotly_chart(
         plot_oil_by_field(field_df),
         use_container_width=True,
@@ -259,7 +272,7 @@ with col2:
 col1, col2 = st.columns(2)
 
 with col1:
-    st.subheader("Top Poços")
+    st.subheader("🏆 Top Poços Produtores")
     st.plotly_chart(
         plot_oil_by_well(well_df),
         use_container_width=True,
@@ -272,14 +285,20 @@ with col2:
         use_container_width=True,
     )
 
-st.subheader("Heatmap")
+st.subheader("🔥 Heatmap de Produção")
 st.plotly_chart(
     plot_heatmap_state_month(heatmap_df),
     use_container_width=True,
 )
 
-st.subheader("Treemap")
+st.subheader("🌳 Produção por Estado e Campo")
 st.plotly_chart(
      plot_treemap_oil(treemap_df),
     use_container_width=True,
+)
+
+st.divider()
+
+st.caption(
+    "PetroForge • Dados públicos da ANP • Desenvolvido por Rafael Fernandes"
 )
