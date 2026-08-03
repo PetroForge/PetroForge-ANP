@@ -60,9 +60,9 @@
 - [x] Criar comparação mensal entre óleo e gás
 - [x] Criar heatmap de produção por estado e mês
 - [x] Criar Treemap por estado e campo
-- [ ] Revisar títulos, unidades e formatação dos gráficos
-- [ ] Validar a interpretação técnica de cada visualização
-- [ ] Integrar todos os gráficos ao dashboard
+- [x] Revisar títulos, unidades e formatação dos gráficos
+- [x] Validar a interpretação técnica de cada visualização
+- [x] Integrar todos os gráficos ao dashboard
 
 ## Versão 3 — Dashboard Streamlit
 
@@ -70,22 +70,30 @@
 - [x] Configurar a página do Streamlit
 - [x] Adicionar título e descrição do projeto
 - [x] Integrar o pipeline de carregamento e limpeza
+- [x] Adicionar cache para carregamento e processamento
 - [x] Criar cards de KPIs
 - [x] Exibir produção total, poços, campos e estados
+- [x] Criar formatadores reutilizáveis para os KPIs
 - [x] Registrar Plotly e Streamlit nas dependências
-- [ ] Adicionar os gráficos Plotly
-- [ ] Criar sidebar
-- [ ] Adicionar filtro por estado
-- [ ] Adicionar filtro por bacia
-- [ ] Adicionar filtro por campo
-- [ ] Adicionar filtro por período
-- [ ] Atualizar KPIs e gráficos dinamicamente
-- [ ] Tratar estados vazios dos filtros
-- [ ] Refinar o layout e a hierarquia visual
+- [x] Adicionar todos os gráficos Plotly
+- [x] Criar sidebar
+- [x] Adicionar filtros em cascata
+- [x] Adicionar filtro por estado
+- [x] Adicionar filtro por bacia
+- [x] Adicionar filtro por campo
+- [x] Adicionar filtro por poço
+- [x] Adicionar filtro por período
+- [x] Exibir inicialmente todo o período disponível
+- [x] Validar o intervalo temporal selecionado
+- [x] Atualizar KPIs e gráficos dinamicamente
+- [x] Tratar combinações de filtros sem resultados
+- [x] Exibir a quantidade de registros analisados
+- [x] Organizar os gráficos em layout responsivo
+- [x] Refinar o layout e a hierarquia visual
+
 
 ## Versão 4 — Refinamento e publicação
 
-- [ ] Adicionar cache para carregamento e processamento
 - [ ] Revisar desempenho
 - [ ] Adicionar testes automatizados
 - [ ] Revisar type hints e docstrings

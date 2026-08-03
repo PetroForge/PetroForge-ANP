@@ -139,14 +139,17 @@ meses_dict = {
     for mes in meses
 }
 
+meses_opcoes = list(meses_dict.keys())
+
 inicio_str = st.sidebar.selectbox(
     "Mês inicial",
-    list(meses_dict.keys()),
+    meses_opcoes,
 )
 
 fim_str = st.sidebar.selectbox(
     "Mês final",
-    list(meses_dict.keys()),
+    meses_opcoes,
+    index=len(meses_opcoes) - 1,
 )
 
 inicio = meses_dict[inicio_str]
@@ -171,7 +174,6 @@ if df_filtrado.empty:
 
 st.sidebar.divider()
 
-
 kpis = get_kpis(df_filtrado)
 
 st.header("📊 Indicadores")
@@ -179,43 +181,41 @@ st.header("📊 Indicadores")
 # KPIs
 # ==========================
 
-st.header("📈 Visualizações")
-
 with st.container():
-
     col1, col2, col3, col4 = st.columns(4)
 
-with col1:
-    st.metric(
-        "Produção Total",
-        format_volume(kpis["oil_total_m3"]),
+    with col1:
+        st.metric(
+            "Produção Total",
+            format_volume(kpis["oil_total_m3"]),
+        )
+
+    with col2:
+        st.metric(
+            "Poços",
+            format_integer(kpis["wells"]),
+        )
+
+    with col3:
+        st.metric(
+            "Campos",
+            format_integer(kpis["fields"]),
+        )
+
+    with col4:
+        st.metric(
+            "Estados",
+            format_integer(kpis["producing_states"]),
+        )
+
+    st.caption(
+        "Todos os indicadores são atualizados automaticamente "
+        "conforme os filtros selecionados."
     )
 
-with col2:
-    st.metric(
-        "Poços",
-        format_integer(kpis["wells"]),
+    st.write(
+        f"**Registros analisados:** {len(df_filtrado):,}"
     )
-
-with col3:
-    st.metric(
-        "Campos",
-        format_integer(kpis["fields"]),
-    )
-
-with col4:
-    st.metric(
-        "Estados",
-        format_integer(kpis["producing_states"]),
-    )
-
-st.caption(
-    "Todos os indicadores são atualizados automaticamente conforme os filtros selecionados."
-)
-
-st.write(
-    f"**Registros analisados:** {len(df_filtrado):,}"
-)
 
 st.divider()
 
