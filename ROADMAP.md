@@ -96,8 +96,8 @@
 
 - [ ] Revisar desempenho
 - [x] Adicionar testes automatizados
-- [ ] Revisar type hints e docstrings
-- [ ] Remover código e dependências não utilizados
+- [x] Revisar type hints e docstrings
+- [x] Remover código e dependências não utilizados
 - [ ] Atualizar o README
 - [ ] Documentar a fonte e o período dos dados
 - [ ] Documentar instalação e execução
