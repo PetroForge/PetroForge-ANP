@@ -2,9 +2,12 @@ import pandas as pd
 import pytest
 
 from src.analysis.production import (
+    oil_gas_by_month,
+    oil_heatmap_state_month,
     oil_production_by,
     oil_production_by_month,
     oil_production_by_well,
+    oil_production_treemap,
 )
 
 
@@ -128,3 +131,105 @@ def test_oil_production_by_well_applies_ranking() -> None:
     assert result.loc[1, SHARE_COLUMN] == pytest.approx(
         50.0 / 185.0 * 100
     )
+
+def test_oil_gas_by_month_calculates_total_gas() -> None:
+    """Verifica a agregação mensal de óleo e gás."""
+
+    dataframe = pd.DataFrame(
+        {
+            "Mês/Ano": [
+                pd.Timestamp("2026-01-01"),
+                pd.Timestamp("2026-01-01"),
+                pd.Timestamp("2026-02-01"),
+            ],
+            OIL_COLUMN: [100.0, 50.0, 80.0],
+            "Produção de Gás Associado (Mm³)": [
+                10.0,
+                None,
+                20.0,
+            ],
+            "Produção de Gás Não Associado (Mm³)": [
+                5.0,
+                7.0,
+                None,
+            ],
+        }
+    )
+
+    result = oil_gas_by_month(dataframe)
+
+    assert result["Mês/Ano"].tolist() == [
+        pd.Timestamp("2026-01-01"),
+        pd.Timestamp("2026-02-01"),
+    ]
+
+    assert result[OIL_COLUMN].tolist() == [150.0, 80.0]
+
+    assert result[
+        "Produção Total de Gás (Mm³)"
+    ].tolist() == [22.0, 20.0]
+
+
+def test_oil_heatmap_state_month_creates_matrix() -> None:
+    """Verifica a matriz de produção por estado e mês."""
+
+    january = pd.Timestamp("2026-01-01")
+    february = pd.Timestamp("2026-02-01")
+
+    dataframe = pd.DataFrame(
+        {
+            "Estado": [
+                "Rio de Janeiro",
+                "Rio de Janeiro",
+                "São Paulo",
+                None,
+            ],
+            "Mês/Ano": [
+                january,
+                february,
+                january,
+                january,
+            ],
+            OIL_COLUMN: [100.0, 200.0, 50.0, 25.0],
+        }
+    )
+
+    result = oil_heatmap_state_month(dataframe)
+
+    assert result.loc["Rio de Janeiro", january] == pytest.approx(100.0)
+    assert result.loc["Rio de Janeiro", february] == pytest.approx(200.0)
+    assert result.loc["São Paulo", january] == pytest.approx(50.0)
+    assert pd.isna(result.loc["São Paulo", february])
+    assert result.index.isna().any()
+
+
+def test_oil_production_treemap_removes_incomplete_hierarchies() -> None:
+    """Verifica a remoção de hierarquias incompatíveis com o Treemap."""
+
+    dataframe = pd.DataFrame(
+        {
+            "Estado": [
+                "Rio de Janeiro",
+                "Rio de Janeiro",
+                None,
+                "São Paulo",
+            ],
+            "Campo": [
+                "CAMPO A",
+                None,
+                "CAMPO C",
+                "CAMPO B",
+            ],
+            OIL_COLUMN: [100.0, 50.0, 25.0, 75.0],
+        }
+    )
+
+    result = oil_production_treemap(dataframe)
+
+    assert len(result) == 2
+    assert not result[["Estado", "Campo"]].isna().any().any()
+
+    production_by_field = result.set_index("Campo")[OIL_COLUMN]
+
+    assert production_by_field["CAMPO A"] == pytest.approx(100.0)
+    assert production_by_field["CAMPO B"] == pytest.approx(75.0)
