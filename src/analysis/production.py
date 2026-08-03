@@ -51,26 +51,17 @@ def oil_production_by_month(df: pd.DataFrame) -> pd.DataFrame:
 
     return production
 
-def oil_production_by_well(df, top_n=15):
-    """
-    Retorna os poços com maior produção de óleo.
-    """
+def oil_production_by_well(
+    df: pd.DataFrame,
+    top_n: int = 15,
+) -> pd.DataFrame:
+    """Retorna os poços com maior produção de óleo."""
 
-    production = (
-        df.groupby("Poço", dropna=False)["Produção de Óleo (m³)"]
-        .sum(min_count=1)
-        .sort_values(ascending=False)
+    return oil_production_by(
+        df,
+        group_by="Poço",
+        top_n=top_n,
     )
-
-    total = production.sum()
-
-    production = production.reset_index()
-
-    production["Participação (%)"] = (
-        production["Produção de Óleo (m³)"] / total * 100
-    )
-
-    return production.head(top_n)
 
 def oil_gas_by_month(df):
     """

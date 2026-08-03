@@ -125,12 +125,8 @@ def test_oil_production_by_well_applies_ranking() -> None:
 
     assert result["Poço"].tolist() == ["POÇO 1", "POÇO 2"]
     assert result[OIL_COLUMN].tolist() == [125.0, 50.0]
-    assert result.loc[0, SHARE_COLUMN] == pytest.approx(
-        125.0 / 185.0 * 100
-    )
-    assert result.loc[1, SHARE_COLUMN] == pytest.approx(
-        50.0 / 185.0 * 100
-    )
+    assert result.loc[0, SHARE_COLUMN] == pytest.approx(67.57)
+    assert result.loc[1, SHARE_COLUMN] == pytest.approx(27.03)
 
 def test_oil_gas_by_month_calculates_total_gas() -> None:
     """Verifica a agregação mensal de óleo e gás."""
