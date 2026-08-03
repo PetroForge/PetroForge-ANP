@@ -95,7 +95,7 @@
 ## Versão 4 — Refinamento e publicação
 
 - [ ] Revisar desempenho
-- [ ] Adicionar testes automatizados
+- [x] Adicionar testes automatizados
 - [ ] Revisar type hints e docstrings
 - [ ] Remover código e dependências não utilizados
 - [ ] Atualizar o README
