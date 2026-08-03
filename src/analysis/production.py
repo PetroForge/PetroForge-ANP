@@ -1,11 +1,14 @@
+"""Agregações de produção utilizadas nas análises e visualizações."""
+
 import pandas as pd
+
 
 def oil_production_by(
     df: pd.DataFrame,
     group_by: str,
     top_n: int | None = None,
 ) -> pd.DataFrame:
-    """Retorna a produção e a participação percentual por categoria."""
+    """Agrega produção de óleo e participação por categoria."""
 
     oil_column = "Produção de Óleo (m³)"
 
@@ -34,7 +37,10 @@ def oil_production_by(
 
     return production.reset_index(drop=True)
 
+
 def oil_production_by_month(df: pd.DataFrame) -> pd.DataFrame:
+    """Agrega a produção de óleo e calcula sua variação mensal."""
+
     production = (
         df.groupby("Mês/Ano")["Produção de Óleo (m³)"]
         .sum()
@@ -44,18 +50,19 @@ def oil_production_by_month(df: pd.DataFrame) -> pd.DataFrame:
 
     production["Variação (%)"] = (
         production["Produção de Óleo (m³)"]
-        .pct_change() * 100
+        .pct_change()
+        .mul(100)
+        .round(2)
     )
-
-    production["Variação (%)"] = production["Variação (%)"].round(2)
 
     return production
 
+
 def oil_production_by_well(
     df: pd.DataFrame,
-    top_n: int = 15,
+    top_n: int | None = 15,
 ) -> pd.DataFrame:
-    """Retorna os poços com maior produção de óleo."""
+    """Retorna o ranking dos poços com maior produção de óleo."""
 
     return oil_production_by(
         df,
@@ -63,17 +70,16 @@ def oil_production_by_well(
         top_n=top_n,
     )
 
-def oil_gas_by_month(df):
-    """
-    Produção mensal de óleo e gás.
-    """
+
+def oil_gas_by_month(df: pd.DataFrame) -> pd.DataFrame:
+    """Agrega mensalmente as produções de óleo e gás."""
 
     production = (
         df.groupby("Mês/Ano")[
             [
                 "Produção de Óleo (m³)",
                 "Produção de Gás Associado (Mm³)",
-                "Produção de Gás Não Associado (Mm³)"
+                "Produção de Gás Não Associado (Mm³)",
             ]
         ]
         .sum(min_count=1)
@@ -88,50 +94,69 @@ def oil_gas_by_month(df):
 
     return production
 
-def oil_heatmap_state_month(df):
-    """
-    Produção de óleo por Estado e Mês.
-    """
+
+def oil_heatmap_state_month(df: pd.DataFrame) -> pd.DataFrame:
+    """Retorna a matriz de produção de óleo por estado e mês."""
 
     heatmap = (
         df.groupby(
             ["Estado", "Mês/Ano"],
-            dropna=False
+            dropna=False,
         )["Produção de Óleo (m³)"]
         .sum(min_count=1)
         .reset_index()
     )
 
-    heatmap = heatmap.pivot(
+    return heatmap.pivot(
         index="Estado",
         columns="Mês/Ano",
-        values="Produção de Óleo (m³)"
+        values="Produção de Óleo (m³)",
     )
 
-    return heatmap
 
-def oil_production_treemap(df):
+def oil_production_treemap(df: pd.DataFrame) -> pd.DataFrame:
+    """Prepara a hierarquia de produção por estado e campo."""
 
     treemap = (
         df.groupby(
             ["Estado", "Campo"],
-            dropna=False
+            dropna=False,
         )["Produção de Óleo (m³)"]
         .sum(min_count=1)
         .reset_index()
     )
 
-    treemap = treemap.dropna(subset=["Estado", "Campo"])
-
-    return treemap
-
-def oil_production_by_state(df):
-    return oil_production_by(df, "Estado")
+    return treemap.dropna(
+        subset=["Estado", "Campo"],
+    )
 
 
-def oil_production_by_basin(df):
-    return oil_production_by(df, "Bacia")
+def oil_production_by_state(df: pd.DataFrame) -> pd.DataFrame:
+    """Retorna a produção de óleo agrupada por estado."""
+
+    return oil_production_by(
+        df,
+        group_by="Estado",
+    )
 
 
-def oil_production_by_field(df, top_n=10):
-    return oil_production_by(df, "Campo", top_n)
+def oil_production_by_basin(df: pd.DataFrame) -> pd.DataFrame:
+    """Retorna a produção de óleo agrupada por bacia."""
+
+    return oil_production_by(
+        df,
+        group_by="Bacia",
+    )
+
+
+def oil_production_by_field(
+    df: pd.DataFrame,
+    top_n: int | None = 10,
+) -> pd.DataFrame:
+    """Retorna o ranking dos campos com maior produção de óleo."""
+
+    return oil_production_by(
+        df,
+        group_by="Campo",
+        top_n=top_n,
+    )

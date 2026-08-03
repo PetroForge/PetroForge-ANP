@@ -1,7 +1,7 @@
+"""Formatação de valores apresentados na interface."""
+
 def format_volume(value: float) -> str:
-    """
-    Formata volumes de produção.
-    """
+    """Formata um volume em m³, milhares ou milhões."""
 
     if value >= 1_000_000:
         return f"{value / 1_000_000:.2f} milhões m³"
@@ -13,8 +13,6 @@ def format_volume(value: float) -> str:
 
 
 def format_integer(value: int) -> str:
-    """
-    Formata números inteiros com separador de milhar.
-    """
+    """Formata um número inteiro com separador de milhar."""
 
     return f"{value:,}".replace(",", ".")

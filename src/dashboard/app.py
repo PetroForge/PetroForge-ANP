@@ -1,43 +1,46 @@
+"""Dashboard Streamlit para análise da produção brasileira de petróleo."""
+
+import pandas as pd
 import streamlit as st
 
-@st.cache_data
-def get_data():
-    df = load_data()
-    return clean_data(df)
-
-
-@st.cache_data
-def get_kpis(df):
-    return production_kpis(df)
-
-from src.data.load import load_data
-from src.processing.clean import clean_data
-from src.analysis.kpis import production_kpis
-from src.utils.formatters import (
-    format_volume,
-    format_integer,
-)
+from src.analysis.kpis import ProductionKPIs, production_kpis
 from src.analysis.production import (
-    oil_production_by_state,
-    oil_production_by_basin,
-    oil_production_by_field,
-    oil_production_by_well,
-    oil_production_by_month,
     oil_gas_by_month,
     oil_heatmap_state_month,
+    oil_production_by_basin,
+    oil_production_by_field,
+    oil_production_by_month,
+    oil_production_by_state,
+    oil_production_by_well,
     oil_production_treemap,
 )
-
+from src.data.load import load_data
+from src.processing.clean import clean_data
+from src.utils.formatters import format_integer, format_volume
 from src.visualization.plots import (
+    plot_heatmap_state_month,
     plot_monthly_oil_production,
     plot_oil_by_basin,
-    plot_oil_by_state,
     plot_oil_by_field,
+    plot_oil_by_state,
     plot_oil_by_well,
     plot_oil_vs_gas,
-    plot_heatmap_state_month,
     plot_treemap_oil,
 )
+
+
+@st.cache_data
+def get_data() -> pd.DataFrame:
+    """Carrega, limpa e mantém os dados em cache."""
+
+    return clean_data(load_data())
+
+
+@st.cache_data
+def get_kpis(df: pd.DataFrame) -> ProductionKPIs:
+    """Calcula e mantém em cache os KPIs do DataFrame informado."""
+
+    return production_kpis(df)
 
 # ==========================
 # Configuração da página

@@ -1,8 +1,10 @@
+"""Etapas de limpeza e padronização dos dados da ANP."""
+
 import pandas as pd
 
 
 def clean_column_names(df: pd.DataFrame) -> pd.DataFrame:
-    """Padroniza os nomes das colunas."""
+    """Remove colchetes e espaços dos nomes das colunas."""
 
     df.columns = (
         df.columns
@@ -15,7 +17,7 @@ def clean_column_names(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def convert_date_column(df: pd.DataFrame) -> pd.DataFrame:
-    """Converte a coluna Mês/Ano para datetime."""
+    """Converte a coluna Mês/Ano para o tipo datetime."""
 
     df["Mês/Ano"] = pd.to_datetime(
         df["Mês/Ano"],
@@ -26,7 +28,7 @@ def convert_date_column(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def clean_data(df: pd.DataFrame) -> pd.DataFrame:
-    """Executa todas as etapas de limpeza dos dados."""
+    """Executa sequencialmente todas as etapas de limpeza."""
 
     df = clean_column_names(df)
     df = convert_date_column(df)
