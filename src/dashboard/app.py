@@ -14,6 +14,7 @@ from src.analysis.production import (
     oil_production_by_well,
     oil_production_treemap,
 )
+from src.data.download import AnpDataError, DataFile, available_sources, get_offshore_file
 from src.data.load import load_data
 from src.processing.clean import clean_data
 from src.utils.formatters import format_integer, format_volume
@@ -29,11 +30,27 @@ from src.visualization.plots import (
 )
 
 
-@st.cache_data
-def get_data() -> pd.DataFrame:
-    """Carrega, limpa e mantém os dados em cache."""
+@st.cache_data(ttl=3600)
+def get_data(
+    selected_years: tuple[int, ...],
+    urls: tuple[str, ...],
+    refresh: int,
+) -> tuple[pd.DataFrame, tuple[DataFile, ...]]:
+    """Obtém e combina os anos selecionados em uma série temporal única."""
 
-    return clean_data(load_data())
+    files = tuple(
+        get_offshore_file(year, url, force=bool(refresh))
+        for year, url in zip(selected_years, urls, strict=True)
+    )
+    frames = [clean_data(load_data(item.path)) for item in files]
+    return pd.concat(frames, ignore_index=True), files
+
+
+@st.cache_data(ttl=3600)
+def get_sources() -> dict[int, str]:
+    """Evita consultar o catálogo da ANP a cada interação da página."""
+
+    return available_sources()
 
 
 @st.cache_data
@@ -53,9 +70,9 @@ st.set_page_config(
 )
 
 st.title("🛢️ PetroForge")
-st.subheader("Dashboard da Produção Brasileira de Petróleo (ANP)")
+st.subheader("Dashboard da Produção Marítima de Petróleo (ANP)")
 st.caption(
-    "Produção brasileira de petróleo e gás natural com dados públicos da ANP."
+    "Produção de petróleo e gás natural em mar com dados públicos da ANP."
 )
 
 st.divider()
@@ -65,7 +82,38 @@ st.divider()
 # Carregamento dos dados
 # ==========================
 
-df = get_data()
+sources = get_sources()
+years = sorted(sources)
+start_year = st.sidebar.selectbox("Ano inicial (mar)", years, index=len(years) - 1)
+end_year = st.sidebar.selectbox("Ano final (mar)", years, index=len(years) - 1)
+if start_year > end_year:
+    st.sidebar.error("O ano inicial não pode ser posterior ao ano final.")
+    st.stop()
+if st.sidebar.button("Atualizar dados da ANP"):
+    st.session_state["refresh"] = st.session_state.get("refresh", 0) + 1
+    get_sources.clear()
+    sources = get_sources()
+
+selected_years = tuple(year for year in years if start_year <= year <= end_year)
+
+try:
+    df, data_files = get_data(
+        selected_years,
+        tuple(sources[year] for year in selected_years),
+        st.session_state.get("refresh", 0),
+    )
+except (AnpDataError, OSError, ValueError) as error:
+    st.error(f"Não foi possível carregar os dados da ANP: {error}")
+    st.stop()
+
+origins = ", ".join(f"{year}: {item.origin}" for year, item in zip(selected_years, data_files, strict=True))
+st.caption(f"Fonte: ANP · Produção em mar · {start_year}–{end_year} · {origins}")
+if any(item.origin not in {"ANP", "cache"} for item in data_files):
+    st.warning("A atualização não foi possível. Exibindo a última cópia disponível.")
+st.caption(
+    "Período publicado no arquivo: "
+    f"{df['Mês/Ano'].min():%m/%Y} a {df['Mês/Ano'].max():%m/%Y}"
+)
 
 st.sidebar.markdown("## Filtros")
 st.sidebar.caption(
@@ -289,6 +337,11 @@ with col2:
     )
 
 st.subheader("🔥 Heatmap de Produção")
+st.caption(
+    "Cada célula mostra a produção de óleo de um estado em um mês; "
+    "tons mais intensos indicam volumes maiores. Use 'Todos' em Estado "
+    "para comparar regiões ao longo do tempo."
+)
 st.plotly_chart(
     plot_heatmap_state_month(heatmap_df),
     use_container_width=True,

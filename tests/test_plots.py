@@ -148,3 +148,67 @@ def test_plot_function_returns_valid_figure(
     assert isinstance(figure, go.Figure)
     assert len(figure.data) > 0
     assert figure.layout.title.text
+
+
+@pytest.mark.parametrize(
+    "plot_function",
+    [plot_oil_by_state, plot_oil_by_basin, plot_oil_by_field, plot_oil_by_well],
+)
+def test_horizontal_bars_leave_room_for_labels(
+    production_dataframe: pd.DataFrame,
+    plot_function: PlotFunction,
+) -> None:
+    """Garante folga após a maior barra para exibir os percentuais."""
+
+    analysis_functions = {
+        plot_oil_by_state: oil_production_by_state,
+        plot_oil_by_basin: oil_production_by_basin,
+        plot_oil_by_field: oil_production_by_field,
+        plot_oil_by_well: oil_production_by_well,
+    }
+    grouped = analysis_functions[plot_function](production_dataframe)
+    figure = plot_function(grouped)
+
+    assert figure.layout.xaxis.range[1] > grouped["Produção de Óleo (m³)"].max()
+    assert figure.data[0].cliponaxis is False
+
+
+@pytest.mark.parametrize(
+    ("analysis_function", "plot_function"),
+    [
+        (oil_production_by_basin, plot_oil_by_basin),
+        (oil_production_by_field, plot_oil_by_field),
+    ],
+)
+def test_percent_labels_use_fixed_column_inside_plot(
+    production_dataframe: pd.DataFrame,
+    analysis_function: AnalysisFunction,
+    plot_function: PlotFunction,
+) -> None:
+    """Evita que o Plotly posicione os percentuais na borda da barra."""
+
+    figure = plot_function(analysis_function(production_dataframe))
+
+    assert len(figure.layout.annotations) == len(analysis_function(production_dataframe))
+    assert all(
+        annotation.x < figure.layout.xaxis.range[1]
+        for annotation in figure.layout.annotations
+    )
+    assert all(annotation.text.endswith("%") for annotation in figure.layout.annotations)
+
+
+def test_single_basin_shows_full_hundred_percent_label() -> None:
+    """Reproduz a seleção de Sergipe mostrada no dashboard."""
+
+    grouped = pd.DataFrame(
+        {
+            "Bacia": ["Sergipe"],
+            "Produção de Óleo (m³)": [5000.0],
+            "Participação (%)": [100.0],
+        }
+    )
+    figure = plot_oil_by_basin(grouped)
+
+    assert figure.data[0].text is None
+    assert figure.layout.annotations[0].text == "100.00%"
+    assert figure.layout.annotations[0].x < figure.layout.xaxis.range[1]

@@ -108,6 +108,25 @@ def test_oil_production_by_month_calculates_variation() -> None:
     assert result.loc[2, "Variação (%)"] == pytest.approx(-20.0)
 
 
+def test_monthly_production_does_not_invent_zero_for_missing_month() -> None:
+    """Um mês sem registro do poço é desconhecido, não produção zero."""
+
+    dataframe = pd.DataFrame(
+        {
+            "Mês/Ano": [pd.Timestamp("2025-12-01"), pd.Timestamp("2026-02-01")],
+            OIL_COLUMN: [100.0, 120.0],
+        }
+    )
+
+    result = oil_production_by_month(dataframe)
+
+    assert result["Mês/Ano"].tolist() == list(
+        pd.date_range("2025-12-01", "2026-02-01", freq="MS")
+    )
+    assert pd.isna(result.loc[1, OIL_COLUMN])
+    assert pd.isna(result.loc[2, "Variação (%)"])
+
+
 def test_oil_production_by_well_applies_ranking() -> None:
     """Verifica o ranking dos poços e o limite top_n."""
 

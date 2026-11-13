@@ -39,7 +39,7 @@ def oil_production_by(
 
 
 def oil_production_by_month(df: pd.DataFrame) -> pd.DataFrame:
-    """Agrega a produção de óleo e calcula sua variação mensal."""
+    """Agrega a produção mensal, preservando lacunas sem presumir volume zero."""
 
     production = (
         df.groupby("Mês/Ano")["Produção de Óleo (m³)"]
@@ -48,9 +48,21 @@ def oil_production_by_month(df: pd.DataFrame) -> pd.DataFrame:
         .sort_values("Mês/Ano")
     )
 
+    months = pd.date_range(
+        production["Mês/Ano"].min(),
+        production["Mês/Ano"].max(),
+        freq="MS",
+    )
+    production = (
+        production.set_index("Mês/Ano")
+        .reindex(months)
+        .rename_axis("Mês/Ano")
+        .reset_index()
+    )
+
     production["Variação (%)"] = (
         production["Produção de Óleo (m³)"]
-        .pct_change()
+        .pct_change(fill_method=None)
         .mul(100)
         .round(2)
     )

@@ -21,7 +21,8 @@
 - [x] Investigar valores ausentes
 - [x] Investigar registros repetidos
 - [x] Preservar valores ausentes com significado operacional
-- [ ] Implementar download automático dos dados da ANP
+- [x] Implementar download automático dos dados marítimos da ANP (2022 em diante)
+- [x] Permitir análise contínua entre anos selecionados
 
 ### Análises de produção
 
@@ -98,11 +99,12 @@
 - [x] Adicionar testes automatizados
 - [x] Revisar type hints e docstrings
 - [x] Remover código e dependências não utilizados
-- [ ] Atualizar o README
-- [ ] Documentar a fonte e o período dos dados
-- [ ] Documentar instalação e execução
+- [x] Atualizar o README
+- [x] Documentar a fonte e o período dos dados
+- [x] Documentar instalação e execução
 - [ ] Adicionar capturas de tela ou GIF do dashboard
-- [ ] Preencher e revisar a licença
+- [x] Definir a política atual de uso: sem licença de reutilização do código
+- [ ] Integrar os arquivos trimestrais de produção em terra
 - [ ] Preparar o projeto para deploy
 - [ ] Publicar o dashboard
 - [ ] Preparar a apresentação para LinkedIn e portfólio
